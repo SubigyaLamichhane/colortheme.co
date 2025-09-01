@@ -8,4 +8,9 @@ export type Palette = {
   likes: number; // seed / derived
   createdAt: string; // ISO
   tags?: string[]; // style/mood filters
+  source?: {
+    package: string; // e.g., MetBrewer
+    palette?: string; // e.g., VanGogh1
+    url?: string; // provenance link
+  };
 };

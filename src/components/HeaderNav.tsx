@@ -3,9 +3,12 @@
 import Link from "next/link";
 import { Moon, Sun, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export function HeaderNav() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [q, setQ] = useState("");
+  const router = useRouter();
 
   useEffect(() => {
     try {
@@ -41,11 +44,21 @@ export function HeaderNav() {
           colortheme.co
         </Link>
         <nav className="flex items-center gap-3">
-          <Link href="/palettes/pastel" className="text-sm hover:underline">
+          <Link href="/palettes/all" className="text-sm hover:underline">
             Explore Palettes
           </Link>
           <div className="relative hidden sm:block">
             <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const dest = q.trim()
+                    ? `/palettes/all?q=${encodeURIComponent(q.trim())}`
+                    : "/palettes/all";
+                  router.push(dest);
+                }
+              }}
               className="pl-9 pr-3 py-1.5 rounded-lg border text-sm w-64 bg-white dark:bg-slate-900 dark:border-slate-800"
               placeholder="Search palettes…"
               aria-label="Search palettes"

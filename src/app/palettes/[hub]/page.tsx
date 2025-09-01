@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { allHubSlugs, hubBySlug, palettesForHub } from "@/lib/hub-utils";
 import { hubMetaDescription, hubMetaTitle } from "@/lib/seo";
-import { PaletteCard } from "@/components/PaletteCard";
+import { PalettesExplorer } from "@/components/PalettesExplorer";
 
 export const dynamic = "force-static";
 
@@ -12,10 +12,11 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { hub: string };
+  params: Promise<{ hub: string }>;
 }): Promise<Metadata> {
-  const hub = hubBySlug(params.hub);
-  const count = palettesForHub(params.hub).length || 500; // placeholder count
+  const { hub: hubSlug } = await params;
+  const hub = hubBySlug(hubSlug);
+  const count = palettesForHub(hubSlug).length || 500; // placeholder count
   const title = hub ? hubMetaTitle(hub.name, count) : "Color Palettes";
   const description = hub ? hubMetaDescription(hub.name) : "Color palettes";
   return {
@@ -25,9 +26,14 @@ export async function generateMetadata({
   };
 }
 
-export default function HubPage({ params }: { params: { hub: string } }) {
-  const hub = hubBySlug(params.hub);
-  const items = palettesForHub(params.hub);
+export default async function HubPage({
+  params,
+}: {
+  params: Promise<{ hub: string }>;
+}) {
+  const { hub: hubSlug } = await params;
+  const hub = hubBySlug(hubSlug);
+  const items = palettesForHub(hubSlug);
 
   if (!hub) {
     return <div>Hub not found.</div>;
@@ -42,28 +48,7 @@ export default function HubPage({ params }: { params: { hub: string } }) {
         </p>
       </header>
 
-      {/* Tabs stub: Latest / Popular / Random — to wire next */}
-      <div className="flex gap-2 text-sm">
-        <button className="px-3 py-1 rounded-full border bg-white dark:bg-slate-900 dark:border-slate-800">
-          Trending
-        </button>
-        <button className="px-3 py-1 rounded-full border bg-white dark:bg-slate-900 dark:border-slate-800">
-          Latest
-        </button>
-        <button className="px-3 py-1 rounded-full border bg-white dark:bg-slate-900 dark:border-slate-800">
-          Random
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {items.length ? (
-          items.map((p) => <PaletteCard key={p.id} palette={p} />)
-        ) : (
-          <div className="text-sm text-slate-600 dark:text-slate-400">
-            No palettes yet.
-          </div>
-        )}
-      </div>
+      <PalettesExplorer items={items} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { HUBS, type HubSlug } from "@/data/hubs";
 import { PALETTES } from "@/data/palettes";
+import { RPALETTES } from "@/data/rpalettes";
 import type { Palette } from "./types";
 
 export function allHubSlugs(): HubSlug[] {
@@ -11,5 +12,7 @@ export function hubBySlug(slug: string) {
 }
 
 export function palettesForHub(slug: string): Palette[] {
-  return PALETTES.filter((p) => p.hubs.includes(slug));
+  const merged = [...RPALETTES, ...PALETTES];
+  if (slug === "all") return merged;
+  return merged.filter((p) => p.hubs.includes(slug));
 }

@@ -1,4 +1,6 @@
 export const HUBS = [
+  // special
+  { slug: "all", name: "All Palettes" },
   // single colors
   { slug: "red", name: "Red Palettes" },
   { slug: "blue", name: "Blue Palettes" },

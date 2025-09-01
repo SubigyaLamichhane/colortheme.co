@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "extract:palettes": "node ./scripts/extract-palettes.mjs"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
