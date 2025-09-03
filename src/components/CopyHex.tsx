@@ -6,7 +6,10 @@ export function CopyHex({ hex }: { hex: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
-      onClick={async () => {
+      onClick={async (e) => {
+        // Prevent parent link/card navigation when copying
+        e.preventDefault();
+        e.stopPropagation();
         try {
           await navigator.clipboard.writeText(hex);
           setCopied(true);

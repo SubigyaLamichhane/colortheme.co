@@ -6,6 +6,7 @@ import Link from "next/link";
 import { PaletteCard } from "./PaletteCard";
 import { useSearchParams } from "next/navigation";
 import { RCATEGORIES } from "@/data/rpalettes";
+import { SidebarSaved } from "./SidebarSaved";
 
 type Props = {
   items: Palette[];
@@ -101,98 +102,145 @@ export function PalettesExplorer({ items }: Props) {
   }, [query, sort, len, pkg, typ, cat]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2 items-center">
-        <div className="relative">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search palettes, colors, tags"
-            className="pl-3 pr-3 py-1.5 rounded-lg border text-sm w-72 bg-white dark:bg-slate-900 dark:border-slate-800"
-            aria-label="Search palettes"
-          />
-        </div>
-        <select
-          value={sort}
-          onChange={(e) =>
-            setSort(e.target.value as "trending" | "latest" | "random")
-          }
-          className="px-2 py-1.5 rounded-lg border text-sm bg-white dark:bg-slate-900 dark:border-slate-800"
-          aria-label="Sort palettes"
-        >
-          <option value="trending">Trending</option>
-          <option value="latest">Latest</option>
-          <option value="random">Random</option>
-        </select>
-        <select
-          value={String(len)}
-          onChange={(e) => setLen(Number(e.target.value))}
-          className="px-2 py-1.5 rounded-lg border text-sm bg-white dark:bg-slate-900 dark:border-slate-800"
-          aria-label="Color count"
-        >
-          <option value="0">Any length</option>
-          <option value="3">3 colors</option>
-          <option value="4">4 colors</option>
-          <option value="5">5 colors</option>
-          <option value="6">6 colors</option>
-          <option value="7">7 colors</option>
-          <option value="8">8 colors</option>
-        </select>
-        <select
-          value={pkg}
-          onChange={(e) => setPkg(e.target.value)}
-          className="px-2 py-1.5 rounded-lg border text-sm bg-white dark:bg-slate-900 dark:border-slate-800"
-          aria-label="Package"
-        >
-          {packages.map((p) => (
-            <option key={p} value={p}>
-              {p === "all" ? "Any package" : p}
-            </option>
-          ))}
-        </select>
-        <select
-          value={typ}
-          onChange={(e) => setTyp(e.target.value)}
-          className="px-2 py-1.5 rounded-lg border text-sm bg-white dark:bg-slate-900 dark:border-slate-800"
-          aria-label="Type"
-        >
-          {types.map((t) => (
-            <option key={t} value={t}>
-              {t === "all" ? "Any type" : t}
-            </option>
-          ))}
-        </select>
-        <select
-          value={cat}
-          onChange={(e) => setCat(e.target.value)}
-          className="px-2 py-1.5 rounded-lg border text-sm bg-white dark:bg-slate-900 dark:border-slate-800"
-          aria-label="Category"
-        >
-          <option value="all">Any category</option>
-          {RCATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-        <div className="text-xs text-slate-500 dark:text-slate-400 ml-auto">
-          {filtered.length} results
-        </div>
-      </div>
+    <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+      {/* Filters Sidebar (stacks on top for mobile) */}
+      <aside className="space-y-4 lg:sticky lg:top-4 h-fit">
+        <div className="rounded-2xl border p-4 theme-border theme-surface">
+          <h3 className="font-semibold text-sm mb-3">Filter Palettes</h3>
+          <div className="space-y-3">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search palettes, colors, tags"
+              className="w-full pl-3 pr-3 py-2 rounded-lg border text-sm theme-surface theme-border"
+              aria-label="Search palettes"
+            />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {filtered.length ? (
-          filtered.slice(0, visible).map((p) => (
-            <Link key={p.id} href={`/palette/${encodeURIComponent(p.id)}`}>
-              <PaletteCard palette={p} />
-            </Link>
-          ))
-        ) : (
-          <div className="text-sm text-slate-600 dark:text-slate-400">
-            No palettes match.
+            <div className="grid grid-cols-1 gap-3">
+              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                Sort
+                <select
+                  value={sort}
+                  onChange={(e) =>
+                    setSort(e.target.value as "trending" | "latest" | "random")
+                  }
+                  className="mt-1 w-full px-2 py-2 rounded-lg border text-sm theme-surface theme-border"
+                  aria-label="Sort palettes"
+                >
+                  <option value="trending">Trending</option>
+                  <option value="latest">Latest</option>
+                  <option value="random">Random</option>
+                </select>
+              </label>
+
+              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                Color count
+                <select
+                  value={String(len)}
+                  onChange={(e) => setLen(Number(e.target.value))}
+                  className="mt-1 w-full px-2 py-2 rounded-lg border text-sm theme-surface theme-border"
+                  aria-label="Color count"
+                >
+                  <option value="0">Any length</option>
+                  <option value="3">3 colors</option>
+                  <option value="4">4 colors</option>
+                  <option value="5">5 colors</option>
+                  <option value="6">6 colors</option>
+                  <option value="7">7 colors</option>
+                  <option value="8">8 colors</option>
+                </select>
+              </label>
+
+              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                Package
+                <select
+                  value={pkg}
+                  onChange={(e) => setPkg(e.target.value)}
+                  className="mt-1 w-full px-2 py-2 rounded-lg border text-sm theme-surface theme-border"
+                  aria-label="Package"
+                >
+                  {packages.map((p) => (
+                    <option key={p} value={p}>
+                      {p === "all" ? "Any package" : p}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                Type
+                <select
+                  value={typ}
+                  onChange={(e) => setTyp(e.target.value)}
+                  className="mt-1 w-full px-2 py-2 rounded-lg border text-sm theme-surface theme-border"
+                  aria-label="Type"
+                >
+                  {types.map((t) => (
+                    <option key={t} value={t}>
+                      {t === "all" ? "Any type" : t}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                Category
+                <select
+                  value={cat}
+                  onChange={(e) => setCat(e.target.value)}
+                  className="mt-1 w-full px-2 py-2 rounded-lg border text-sm theme-surface theme-border"
+                  aria-label="Category"
+                >
+                  <option value="all">Any category</option>
+                  {RCATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                {filtered.length} results
+              </div>
+              <button
+                onClick={() => {
+                  setQuery("");
+                  setSort("trending");
+                  setLen(0);
+                  setPkg("all");
+                  setTyp("all");
+                  setCat("all");
+                }}
+                className="text-xs px-2 py-1 rounded border theme-border hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Clear
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+        {/* Saved palettes moved here from global layout */}
+        <SidebarSaved />
+      </aside>
+
+      {/* Results */}
+      <section className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {filtered.length ? (
+            filtered.slice(0, visible).map((p) => (
+              <Link key={p.id} href={`/palette/${encodeURIComponent(p.id)}`}>
+                <PaletteCard palette={p} />
+              </Link>
+            ))
+          ) : (
+            <div className="text-sm text-slate-600 dark:text-slate-400">
+              No palettes match.
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

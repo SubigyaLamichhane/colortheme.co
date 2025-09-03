@@ -2,15 +2,23 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0b0b0b;
+  --surface: #ffffff;
+  --border: rgba(0, 0, 0, 0.08);
+  --muted: #f4f6f8;
+  --accent: #3b82f6;
+  --accent-contrast: #ffffff;
 }
 
-/* custom theme vars could go here if needed */
-
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme-active="true"]) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --surface: #0b0b0b;
+    --border: rgba(255, 255, 255, 0.12);
+    --muted: #111315;
+    --accent: #60a5fa;
+    --accent-contrast: #0b0b0b;
   }
 }
 
@@ -18,4 +26,22 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Utilities aligned to CSS vars (used with existing Tailwind classes) */
+.theme-surface {
+  background-color: var(--surface);
+}
+.theme-border {
+  border-color: var(--border);
+}
+.theme-muted {
+  color: color-mix(in oklab, var(--foreground), transparent 40%);
+}
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+}
+.btn-accent:hover {
+  filter: brightness(0.95);
 }

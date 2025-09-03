@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Palette } from "@/lib/types";
+import { ApplyThemeButton } from "@/components/ApplyThemeButton";
 import { RPALETTES } from "@/data/rpalettes";
 import { PALETTES } from "@/data/palettes";
 
@@ -41,9 +42,12 @@ export default function PaletteDetail({ params }: { params: { id: string } }) {
       </nav>
       <header className="space-y-1">
         <h1 className="text-xl font-semibold">{p.name}</h1>
-        <p className="text-sm">{p.colors.join(" · ")}</p>
+        <div className="flex items-center gap-3">
+          <p className="text-sm">{p.colors.join(" · ")}</p>
+          <ApplyThemeButton palette={p} />
+        </div>
       </header>
-      <div className="rounded-2xl overflow-hidden border dark:border-slate-800">
+      <div className="rounded-2xl overflow-hidden border theme-border">
         <div className="flex">
           {p.colors.map((c) => (
             <div
