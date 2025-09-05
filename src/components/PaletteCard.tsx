@@ -13,7 +13,7 @@ export function PaletteCard({ palette }: { palette: Palette }) {
   const isActive = active?.id === palette.id;
 
   return (
-    <article className="rounded-2xl border shadow-sm overflow-hidden dark:border-slate-800">
+    <article className="rounded-2xl border shadow-sm overflow-hidden theme-border theme-surface">
       <div className="flex">
         {palette.colors.map((hex, i) => (
           <div
@@ -29,10 +29,10 @@ export function PaletteCard({ palette }: { palette: Palette }) {
       </div>
       <div className="p-3 flex items-center justify-between theme-surface">
         <div className="min-w-0">
-          <h3 className="text-sm font-medium truncate">{palette.name}</h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {palette.colors.join(" · ")}
-          </p>
+          <h3 className="text-sm font-medium truncate text-primary">
+            {palette.name}
+          </h3>
+          <p className="text-xs text-secondary">{palette.colors.join(" · ")}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -42,10 +42,8 @@ export function PaletteCard({ palette }: { palette: Palette }) {
               if (isActive) clearTheme();
               else applyPalette(palette);
             }}
-            className={`inline-flex items-center gap-1 text-xs rounded-lg border px-2 py-1 theme-border ${
-              isActive
-                ? "btn-accent border-transparent"
-                : "hover:bg-slate-50 dark:hover:bg-slate-800"
+            className={`inline-flex items-center gap-1 text-xs rounded-lg px-2 py-1 ${
+              isActive ? "btn-accent" : "btn-outline"
             }`}
             aria-pressed={isActive}
             aria-label={
@@ -64,17 +62,11 @@ export function PaletteCard({ palette }: { palette: Palette }) {
             }}
             aria-pressed={saved}
             aria-label={saved ? "Unsave palette" : "Save palette"}
-            className={`inline-flex items-center gap-1 text-sm rounded-lg border px-2 py-1 ${
-              saved
-                ? "bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-900"
-                : "hover:bg-slate-50 dark:hover:bg-slate-800 dark:border-slate-800"
+            className={`inline-flex items-center gap-1 text-sm rounded-lg px-2 py-1 ${
+              saved ? "btn-accent" : "btn-outline"
             }`}
           >
-            <Heart
-              className={`h-4 w-4 ${
-                saved ? "fill-rose-500 text-rose-500" : ""
-              }`}
-            />
+            <Heart className={`h-4 w-4 ${saved ? "fill-current" : ""}`} />
             <span>{saved ? "Saved" : "Save"}</span>
           </button>
         </div>

@@ -3,6 +3,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Palette } from "@/lib/types";
+import {
+  getLuminance,
+  getBestTextColor,
+  mixColors,
+  getReadableTextColor,
+} from "@/lib/color-utils";
 
 type ActiveTheme = {
   id?: string;
@@ -20,75 +26,96 @@ type ThemeState = {
 
 const THEME_STORAGE_KEY = "palettehub:activeTheme";
 
-function hexToRgb(hex: string) {
-  const m = hex.replace("#", "");
-  const r = parseInt(m.slice(0, 2), 16);
-  const g = parseInt(m.slice(2, 4), 16);
-  const b = parseInt(m.slice(4, 6), 16);
-  return { r, g, b };
-}
-
-function luminance(hex: string) {
-  const { r, g, b } = hexToRgb(hex);
-  const srgb = [r, g, b].map((v) => {
-    const c = v / 255;
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-  });
-  return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2];
-}
-
-function contrastColor(bg: string) {
-  return luminance(bg) > 0.6 ? "#0b0b0b" : "#fafafa";
-}
-
-function mix(a: string, b: string, ratio: number) {
-  const ca = hexToRgb(a);
-  const cb = hexToRgb(b);
-  const m = (x: number, y: number) => Math.round(x * (1 - ratio) + y * ratio);
-  const toHex = (n: number) => n.toString(16).padStart(2, "0");
-  return `#${toHex(m(ca.r, cb.r))}${toHex(m(ca.g, cb.g))}${toHex(
-    m(ca.b, cb.b)
-  )}`;
-}
-
+/**
+ * Enhanced theme application with better legibility
+ */
 function setCssVarsFromColors(
   colors: string[],
   mode: "full" | "accent" = "accent"
 ) {
   const root = document.documentElement;
   const cols = colors.slice(0, 8);
+
   if (!cols.length) {
     root.removeAttribute("data-theme-active");
     return;
   }
-  const sortedByLight = [...cols].sort((a, b) => luminance(b) - luminance(a));
+
+  // Sort colors by luminance for better role assignment
+  const sortedByLight = [...cols].sort(
+    (a, b) => getLuminance(b) - getLuminance(a)
+  );
+  const sortedByDark = [...cols].sort(
+    (a, b) => getLuminance(a) - getLuminance(b)
+  );
+
   const lightest = sortedByLight[0] || cols[0];
-  const darkest =
-    [...cols].sort((a, b) => luminance(a) - luminance(b))[0] || cols[0];
+  const darkest = sortedByDark[0] || cols[0];
+
+  // Choose background and foreground with accessibility in mind
   const background = lightest;
-  const foreground = contrastColor(background);
-  const accent = cols[Math.min(2, cols.length - 1)];
-  const accentContrast = contrastColor(accent);
-  const border = mix(background, foreground, 0.15);
+  const foreground = getBestTextColor(background);
+
+  // Choose accent with good contrast against both light and dark backgrounds
+  let accent = cols[Math.min(2, cols.length - 1)];
+
+  // If accent doesn't have good contrast, find a better one
+  const isLightTheme = getLuminance(background) > 0.5;
+  if (isLightTheme && getLuminance(accent) > 0.7) {
+    // For light themes, prefer darker accents
+    accent = sortedByDark.find((c) => getLuminance(c) < 0.5) || accent;
+  } else if (!isLightTheme && getLuminance(accent) < 0.3) {
+    // For dark themes, prefer lighter accents
+    accent = sortedByLight.find((c) => getLuminance(c) > 0.5) || accent;
+  }
+
+  const accentContrast = getBestTextColor(accent);
+  const border = mixColors(background, foreground, 0.15);
+  const muted = mixColors(background, darkest, 0.75);
+
   const set = (k: string, v: string) => root.style.setProperty(k, v);
+
   // Always set accent variables
   set("--accent", accent);
   set("--accent-contrast", accentContrast);
+
+  // Set readable text colors for all palette colors
+  cols.forEach((color, i) => {
+    set(`--palette-${i + 1}`, color);
+    set(
+      `--palette-${i + 1}-text`,
+      getReadableTextColor(color, "high-contrast")
+    );
+    set(
+      `--palette-${i + 1}-text-subtle`,
+      getReadableTextColor(color, "subtle")
+    );
+  });
+
   // Only override surfaces in full mode
   if (mode === "full") {
     set("--background", background);
     set("--foreground", foreground);
     set("--surface", background);
     set("--border", border);
-    set("--muted", mix(background, darkest, 0.75));
-    document.documentElement.style.colorScheme =
-      luminance(background) > 0.6 ? "light" : "dark";
+    set("--muted", muted);
+
+    // Set semantic text colors for better legibility
+    set("--text-primary", foreground);
+    set(
+      "--text-secondary",
+      getReadableTextColor(background, "medium-contrast")
+    );
+    set("--text-muted", getReadableTextColor(background, "subtle"));
+
+    document.documentElement.style.colorScheme = isLightTheme
+      ? "light"
+      : "dark";
     root.setAttribute("data-theme-active", "true");
   } else {
     // Accent mode: keep defaults; mark state for reference
     root.setAttribute("data-theme-active", "accent");
   }
-  cols.forEach((c, i) => set(`--palette-${i + 1}`, c));
 }
 
 export const useTheme = create<ThemeState>()(
@@ -104,8 +131,8 @@ export const useTheme = create<ThemeState>()(
             mode ||
             (typeof window !== "undefined"
               ? JSON.parse(localStorage.getItem(THEME_STORAGE_KEY) || "{}")
-                  ?.mode || "accent"
-              : "accent"),
+                  ?.mode || "full"
+              : "full"),
         };
         try {
           localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(payload));
@@ -133,8 +160,10 @@ export const useTheme = create<ThemeState>()(
           localStorage.removeItem(THEME_STORAGE_KEY);
           const root = document.documentElement;
           root.removeAttribute("data-theme-active");
+          // Reset color-scheme back to stylesheet/defaults
+          document.documentElement.style.colorScheme = "";
           // Remove custom vars to let defaults/dark-mode apply
-          [
+          const varsToRemove = [
             "--accent",
             "--accent-contrast",
             "--background",
@@ -142,12 +171,35 @@ export const useTheme = create<ThemeState>()(
             "--surface",
             "--border",
             "--muted",
-          ].forEach((k) => root.style.removeProperty(k));
+            "--text-primary",
+            "--text-secondary",
+            "--text-muted",
+          ];
+
+          // Remove palette color variables
+          for (let i = 1; i <= 8; i++) {
+            varsToRemove.push(`--palette-${i}`);
+            varsToRemove.push(`--palette-${i}-text`);
+            varsToRemove.push(`--palette-${i}-text-subtle`);
+          }
+
+          varsToRemove.forEach((k) => root.style.removeProperty(k));
         } catch {}
         set({ active: null });
       },
     }),
-    { name: "palettehub:state" }
+    {
+      name: "palettehub:state",
+      onRehydrateStorage: () => (state) => {
+        // Ensure CSS variables are applied after client rehydration
+        try {
+          const active = state?.active as ActiveTheme | null;
+          if (active && Array.isArray(active.colors) && active.colors.length) {
+            setCssVarsFromColors(active.colors, active.mode || "full");
+          }
+        } catch {}
+      },
+    }
   )
 );
 

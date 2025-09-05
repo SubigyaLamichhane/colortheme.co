@@ -37,7 +37,7 @@ export default function PaletteDetail({ params }: { params: { id: string } }) {
   if (!p) return notFound();
   return (
     <div className="space-y-4">
-      <nav className="text-sm text-slate-500 dark:text-slate-400">
+      <nav className="text-sm text-muted">
         <Link href="/palettes/all">← Back to All Palettes</Link>
       </nav>
       <header className="space-y-1">
@@ -59,7 +59,7 @@ export default function PaletteDetail({ params }: { params: { id: string } }) {
         </div>
       </div>
       {p.source && (
-        <div className="text-sm text-slate-600 dark:text-slate-400">
+        <div className="text-sm text-secondary">
           Source: {p.source.package}
           {p.source.palette ? ` – ${p.source.palette}` : ""}
           {p.source.url && (

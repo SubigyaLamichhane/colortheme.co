@@ -10,7 +10,7 @@ export function ThemeSelectorButton() {
     <div className="inline-flex items-center gap-2">
       <Link
         href="/palettes/all"
-        className="inline-flex items-center gap-2 rounded-lg border px-2 h-8 theme-border theme-surface hover:bg-slate-50 dark:hover:bg-slate-800"
+        className="inline-flex items-center gap-2 rounded-lg px-2 h-8 btn-outline"
         aria-label="Choose a site theme"
         title="Choose a site theme"
       >
@@ -35,14 +35,14 @@ export function ThemeSelectorButton() {
         <span className="text-xs">Theme</span>
       </Link>
       <select
-        className="h-8 text-xs rounded-lg border theme-border theme-surface px-1"
-        value={active?.mode || "accent"}
+        className="h-8 text-xs rounded-lg input-base px-1"
+        value={active?.mode || "full"}
         onChange={(e) => setThemeMode(e.target.value as "full" | "accent")}
         aria-label="Theme mode"
         title="Theme mode"
       >
-        <option value="accent">Accent only</option>
         <option value="full">Full</option>
+        <option value="accent">Accent only</option>
       </select>
     </div>
   );

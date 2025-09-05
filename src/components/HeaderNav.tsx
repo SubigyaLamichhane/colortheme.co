@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { useSavedPalettes } from "@/lib/saved-palettes.store";
 import { useTheme } from "@/lib/theme.store";
 import { ThemeSelectorButton } from "./ThemeSelectorButton";
+import { useThemePreset } from "@/lib/theme-preset.store";
+import type { PresetTheme } from "@/lib/theme-preset.store";
 
 export function HeaderNav() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -14,6 +16,7 @@ export function HeaderNav() {
   const router = useRouter();
   const savedCount = Object.keys(useSavedPalettes((s) => s.savedIds)).length;
   const { active, clearTheme } = useTheme();
+  const { preset, setPreset } = useThemePreset();
 
   useEffect(() => {
     try {
@@ -58,13 +61,37 @@ export function HeaderNav() {
             Explore Palettes
           </Link>
           <ThemeSelectorButton />
+          <select
+            className="h-8 text-xs rounded-lg input-base px-1"
+            value={preset}
+            onChange={(e) => setPreset(e.target.value as PresetTheme)}
+            aria-label="Select preset theme"
+            title="Preset theme"
+          >
+            <option value="system">System</option>
+            <option value="ocean">Ocean</option>
+            <option value="forest">Forest</option>
+            <option value="sunset">Sunset</option>
+            <option value="grape">Grape</option>
+            <option value="slate">Slate</option>
+            <option value="latte">Latte</option>
+            <option value="none">None</option>
+          </select>
           <Link
             href="/saved"
             className="text-sm hover:underline inline-flex items-center gap-1"
           >
             Saved
             {savedCount > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center text-[10px] leading-none px-1.5 py-0.5 rounded-full bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
+              <span
+                className="ml-1 inline-flex items-center justify-center text-[10px] leading-none px-1.5 py-0.5 rounded-full"
+                style={{
+                  backgroundColor:
+                    "color-mix(in oklab, var(--foreground), transparent 85%)",
+                  color: "var(--foreground)",
+                  border: "1px solid var(--border)",
+                }}
+              >
                 {savedCount}
               </span>
             )}
@@ -81,7 +108,7 @@ export function HeaderNav() {
                   router.push(dest);
                 }
               }}
-              className="pl-9 pr-3 py-1.5 rounded-lg border text-sm w-64 theme-surface theme-border"
+              className="pl-9 pr-3 py-1.5 text-sm w-64 input-base"
               placeholder="Search palettes…"
               aria-label="Search palettes"
             />
@@ -90,7 +117,7 @@ export function HeaderNav() {
           {active && (
             <button
               onClick={clearTheme}
-              className="hidden sm:inline-flex h-8 items-center justify-center rounded-lg border px-2 text-xs theme-border hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="hidden sm:inline-flex h-8 items-center justify-center px-2 text-xs rounded-lg btn-outline"
               aria-label="Clear applied theme"
               title="Clear applied theme"
             >
@@ -99,7 +126,7 @@ export function HeaderNav() {
           )}
           <button
             onClick={toggleTheme}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border theme-border hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg btn-outline"
             aria-label="Toggle theme"
             title="Toggle theme"
           >

@@ -9,10 +9,8 @@ export function ApplyThemeButton({ palette }: { palette: Palette }) {
   return (
     <button
       onClick={() => (isActive ? clearTheme() : applyPalette(palette))}
-      className={`text-xs inline-flex items-center gap-1 rounded-lg border px-2 py-1 theme-border ${
-        isActive
-          ? "btn-accent border-transparent"
-          : "hover:bg-slate-50 dark:hover:bg-slate-800"
+      className={`text-xs inline-flex items-center gap-1 rounded-lg px-2 py-1 ${
+        isActive ? "btn-accent" : "btn-outline"
       }`}
       aria-pressed={isActive}
       aria-label={isActive ? "Clear applied theme" : "Apply as site theme"}

@@ -38,17 +38,17 @@ export default function SavedPage() {
     <div className="space-y-4">
       <header className="space-y-1">
         <h1 className="text-xl font-semibold">Saved Palettes</h1>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-secondary">
           Your favorites live here. Remove any by tapping the heart.
         </p>
       </header>
 
       {!hydrated ? (
-        <div className="rounded-2xl border p-6 text-sm text-slate-600 dark:text-slate-400 dark:border-slate-800">
+        <div className="rounded-2xl border p-6 text-sm text-secondary theme-border">
           Loading saved palettes…
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-2xl border p-6 text-sm text-slate-600 dark:text-slate-400 dark:border-slate-800">
+        <div className="rounded-2xl border p-6 text-sm text-secondary theme-border">
           You haven&apos;t saved any palettes yet. Explore and tap the heart to
           save.
         </div>

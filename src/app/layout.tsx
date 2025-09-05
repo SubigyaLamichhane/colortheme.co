@@ -66,6 +66,14 @@ export default function RootLayout({
     }
   } catch {}
   }
+  // preset theme support (data-theme)
+  try {
+    const kPreset='palettehub:presetTheme';
+    const pr=JSON.parse(localStorage.getItem(kPreset)||'{}');
+    const p = pr?.state?.preset || pr?.preset;
+    const root=document.documentElement;
+    if (p && p !== 'system' && p !== 'none') root.setAttribute('data-theme', p);
+  } catch {}
 } catch {} })();`,
           }}
         />

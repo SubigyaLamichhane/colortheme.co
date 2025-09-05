@@ -13,15 +13,15 @@ export function SidebarSaved() {
 
   if (!savedIds.length) {
     return (
-      <div className="rounded-2xl border p-4 theme-border">
+      <div className="rounded-2xl border p-4 theme-border theme-surface">
         <h4 className="font-semibold mb-1">Saved Palettes</h4>
-        <p className="text-sm text-slate-600 dark:text-slate-400">
+        <p className="text-sm text-secondary">
           Tap the heart on any palette to save it here.
         </p>
         {active && (
           <button
             onClick={clearTheme}
-            className="mt-3 text-xs inline-flex items-center gap-1 rounded-lg border px-2 py-1 theme-border hover:bg-slate-50 dark:hover:bg-slate-800"
+            className="mt-3 text-xs inline-flex items-center gap-1 rounded-lg px-2 py-1 btn-outline"
             aria-label="Clear applied theme"
           >
             Clear applied theme
@@ -36,13 +36,10 @@ export function SidebarSaved() {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-2xl border p-4 theme-border">
+      <div className="rounded-2xl border p-4 theme-border theme-surface">
         <div className="flex items-center justify-between mb-3">
           <h4 className="font-semibold">Saved Palettes</h4>
-          <Link
-            href="/saved"
-            className="text-xs text-slate-500 hover:underline"
-          >
+          <Link href="/saved" className="text-xs text-muted hover:underline">
             View all
           </Link>
         </div>
@@ -50,7 +47,7 @@ export function SidebarSaved() {
           <div className="mb-2">
             <button
               onClick={clearTheme}
-              className="text-xs inline-flex items-center gap-1 rounded-lg border px-2 py-1 theme-border hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="text-xs inline-flex items-center gap-1 rounded-lg px-2 py-1 btn-outline"
               aria-label="Clear applied theme"
             >
               Clear applied theme
@@ -64,7 +61,7 @@ export function SidebarSaved() {
         </div>
       </div>
       {/* Ad slot placeholder */}
-      <div className="rounded-2xl border p-6 text-center text-sm text-slate-500 dark:text-slate-400 dark:border-slate-800">
+      <div className="rounded-2xl border p-6 text-center text-sm text-muted theme-border theme-surface">
         Advertisement
       </div>
     </div>

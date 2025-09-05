@@ -112,19 +112,19 @@ export function PalettesExplorer({ items }: Props) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search palettes, colors, tags"
-              className="w-full pl-3 pr-3 py-2 rounded-lg border text-sm theme-surface theme-border"
+              className="w-full pl-3 pr-3 py-2 text-sm input-base"
               aria-label="Search palettes"
             />
 
             <div className="grid grid-cols-1 gap-3">
-              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+              <label className="text-xs font-medium text-secondary">
                 Sort
                 <select
                   value={sort}
                   onChange={(e) =>
                     setSort(e.target.value as "trending" | "latest" | "random")
                   }
-                  className="mt-1 w-full px-2 py-2 rounded-lg border text-sm theme-surface theme-border"
+                  className="mt-1 w-full px-2 py-2 text-sm input-base"
                   aria-label="Sort palettes"
                 >
                   <option value="trending">Trending</option>
@@ -133,12 +133,12 @@ export function PalettesExplorer({ items }: Props) {
                 </select>
               </label>
 
-              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+              <label className="text-xs font-medium text-secondary">
                 Color count
                 <select
                   value={String(len)}
                   onChange={(e) => setLen(Number(e.target.value))}
-                  className="mt-1 w-full px-2 py-2 rounded-lg border text-sm theme-surface theme-border"
+                  className="mt-1 w-full px-2 py-2 text-sm input-base"
                   aria-label="Color count"
                 >
                   <option value="0">Any length</option>
@@ -151,12 +151,12 @@ export function PalettesExplorer({ items }: Props) {
                 </select>
               </label>
 
-              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+              <label className="text-xs font-medium text-secondary">
                 Package
                 <select
                   value={pkg}
                   onChange={(e) => setPkg(e.target.value)}
-                  className="mt-1 w-full px-2 py-2 rounded-lg border text-sm theme-surface theme-border"
+                  className="mt-1 w-full px-2 py-2 text-sm input-base"
                   aria-label="Package"
                 >
                   {packages.map((p) => (
@@ -167,12 +167,12 @@ export function PalettesExplorer({ items }: Props) {
                 </select>
               </label>
 
-              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+              <label className="text-xs font-medium text-secondary">
                 Type
                 <select
                   value={typ}
                   onChange={(e) => setTyp(e.target.value)}
-                  className="mt-1 w-full px-2 py-2 rounded-lg border text-sm theme-surface theme-border"
+                  className="mt-1 w-full px-2 py-2 text-sm input-base"
                   aria-label="Type"
                 >
                   {types.map((t) => (
@@ -183,12 +183,12 @@ export function PalettesExplorer({ items }: Props) {
                 </select>
               </label>
 
-              <label className="text-xs font-medium text-slate-600 dark:text-slate-300">
+              <label className="text-xs font-medium text-secondary">
                 Category
                 <select
                   value={cat}
                   onChange={(e) => setCat(e.target.value)}
-                  className="mt-1 w-full px-2 py-2 rounded-lg border text-sm theme-surface theme-border"
+                  className="mt-1 w-full px-2 py-2 text-sm input-base"
                   aria-label="Category"
                 >
                   <option value="all">Any category</option>
@@ -202,7 +202,7 @@ export function PalettesExplorer({ items }: Props) {
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <div className="text-xs text-slate-500 dark:text-slate-400">
+              <div className="text-xs text-muted">
                 {filtered.length} results
               </div>
               <button
@@ -214,7 +214,7 @@ export function PalettesExplorer({ items }: Props) {
                   setTyp("all");
                   setCat("all");
                 }}
-                className="text-xs px-2 py-1 rounded border theme-border hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="text-xs px-2 py-1 rounded btn-outline"
               >
                 Clear
               </button>
@@ -235,9 +235,7 @@ export function PalettesExplorer({ items }: Props) {
               </Link>
             ))
           ) : (
-            <div className="text-sm text-slate-600 dark:text-slate-400">
-              No palettes match.
-            </div>
+            <div className="text-sm text-secondary">No palettes match.</div>
           )}
         </div>
       </section>

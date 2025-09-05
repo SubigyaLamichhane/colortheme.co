@@ -8,6 +8,11 @@
   --muted: #f4f6f8;
   --accent: #3b82f6;
   --accent-contrast: #ffffff;
+
+  /* Enhanced semantic text colors for better legibility */
+  --text-primary: var(--foreground);
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -19,6 +24,11 @@
     --muted: #111315;
     --accent: #60a5fa;
     --accent-contrast: #0b0b0b;
+
+    /* Enhanced semantic text colors for dark mode */
+    --text-primary: var(--foreground);
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
   }
 }
 
@@ -44,4 +54,170 @@ body {
 }
 .btn-accent:hover {
   filter: brightness(0.95);
+}
+
+/* New utilities for consistent theming */
+.btn-outline {
+  background-color: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover {
+  background-color: color-mix(in oklab, var(--surface), transparent 10%);
+}
+.btn-outline:active {
+  background-color: color-mix(in oklab, var(--surface), transparent 15%);
+}
+
+/* Badge */
+.badge {
+  background-color: color-mix(in oklab, var(--foreground), transparent 85%);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.input-base {
+  background-color: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+}
+.input-base:focus-visible,
+.btn-outline:focus-visible,
+.btn-accent:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.theme-hover:hover {
+  background-color: color-mix(in oklab, var(--surface), transparent 10%);
+}
+.theme-hover:active {
+  background-color: color-mix(in oklab, var(--surface), transparent 15%);
+}
+
+/* Optional: accent links */
+a.theme-link {
+  color: var(--accent);
+}
+a.theme-link:hover {
+  text-decoration: underline;
+}
+
+/* Enhanced legibility utilities */
+.text-primary {
+  color: var(--text-primary);
+}
+.text-secondary {
+  color: var(--text-secondary);
+}
+.text-muted {
+  color: var(--text-muted);
+}
+
+/* Palette-aware text utilities */
+.palette-text-1 {
+  background-color: var(--palette-1);
+  color: var(--palette-1-text);
+}
+.palette-text-1-subtle {
+  background-color: var(--palette-1);
+  color: var(--palette-1-text-subtle);
+}
+.palette-text-2 {
+  background-color: var(--palette-2);
+  color: var(--palette-2-text);
+}
+.palette-text-2-subtle {
+  background-color: var(--palette-2);
+  color: var(--palette-2-text-subtle);
+}
+.palette-text-3 {
+  background-color: var(--palette-3);
+  color: var(--palette-3-text);
+}
+.palette-text-3-subtle {
+  background-color: var(--palette-3);
+  color: var(--palette-3-text-subtle);
+}
+.palette-text-4 {
+  background-color: var(--palette-4);
+  color: var(--palette-4-text);
+}
+.palette-text-4-subtle {
+  background-color: var(--palette-4);
+  color: var(--palette-4-text-subtle);
+}
+
+/* Preset themes (3–4 core colors each) */
+/* Ocean (dark cool) */
+[data-theme="ocean"] {
+  color-scheme: dark;
+  --background: #0b1220; /* deep navy */
+  --surface: #0e1628; /* card */
+  --foreground: #e6f1ff; /* text */
+  --border: rgba(255, 255, 255, 0.12);
+  --muted: #0f1d33;
+  --accent: #22c1dc; /* aqua */
+  --accent-contrast: #041018;
+}
+
+/* Forest (dark green) */
+[data-theme="forest"] {
+  color-scheme: dark;
+  --background: #0d1712; /* pine */
+  --surface: #11221a;
+  --foreground: #e7f6ee;
+  --border: rgba(255, 255, 255, 0.12);
+  --muted: #0f1d17;
+  --accent: #4ade80; /* green */
+  --accent-contrast: #05210f;
+}
+
+/* Sunset (light warm) */
+[data-theme="sunset"] {
+  color-scheme: light;
+  --background: #fff7ed; /* peach */
+  --surface: #fff4e6;
+  --foreground: #1b140f;
+  --border: rgba(0, 0, 0, 0.1);
+  --muted: #ffe8d1;
+  --accent: #fb923c; /* orange */
+  --accent-contrast: #2a1205;
+}
+
+/* Grape (mid) */
+[data-theme="grape"] {
+  color-scheme: dark;
+  --background: #1a1224; /* plum */
+  --surface: #20152d;
+  --foreground: #f6edff;
+  --border: rgba(255, 255, 255, 0.12);
+  --muted: #1d1730;
+  --accent: #a78bfa; /* violet */
+  --accent-contrast: #1b1240;
+}
+
+/* Slate (neutral) */
+[data-theme="slate"] {
+  color-scheme: dark;
+  --background: #0b0e12;
+  --surface: #0e1217;
+  --foreground: #e5e7eb;
+  --border: rgba(255, 255, 255, 0.12);
+  --muted: #10151b;
+  --accent: #60a5fa; /* blue */
+  --accent-contrast: #0b0f15;
+}
+
+/* Latte (light neutral) */
+[data-theme="latte"] {
+  color-scheme: light;
+  --background: #fbf7ef; /* cream */
+  --surface: #f7f1e6;
+  --foreground: #171411;
+  --border: rgba(0, 0, 0, 0.08);
+  --muted: #efe6d8;
+  --accent: #d97706; /* amber */
+  --accent-contrast: #230e02;
 }
