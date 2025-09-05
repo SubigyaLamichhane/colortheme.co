@@ -1,0 +1,38 @@
+// Prisma schema for colortheme.co
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Palette {
+  id        String   @id // Use the same palette id as in the app
+  slug      String   @unique
+  name      String
+  colors    String[] // hex codes
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  likes     Like[]
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  ip        String
+  paletteId String
+  createdAt DateTime @default(now())
+  palette   Palette @relation(fields: [paletteId], references: [id], onDelete: Cascade)
+  @@unique([ip, paletteId])
+}
+
+// Optional user model kept for future auth expansion (commented out for now)
+// model User {
+//   id        String   @id @default(cuid())
+//   email     String   @unique
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   likes     Like[]
+// }

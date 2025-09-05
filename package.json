@@ -7,9 +7,21 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "extract:palettes": "node ./scripts/extract-palettes.mjs"
+    "extract:palettes": "node ./scripts/extract-palettes.mjs",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:migrate:init": "prisma migrate dev --name init",
+    "prisma:studio": "prisma studio",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:reset": "prisma migrate reset --force",
+    "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.15.0",
     "class-variance-authority": "^0.7.1",
     "lucide-react": "^0.541.0",
     "next": "15.5.0",
@@ -27,6 +39,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
+    "prisma": "^6.15.0",
+    "tsx": "^4.19.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
