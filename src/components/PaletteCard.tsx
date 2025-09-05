@@ -4,7 +4,7 @@ import { Heart } from "lucide-react";
 import { useSavedPalettes } from "@/lib/saved-palettes.store";
 import type { Palette } from "@/lib/types";
 import { CopyHex } from "./CopyHex";
-import { useTheme } from "@/lib/theme.store";
+import { useTheme, componentVars } from "@/lib/theme.store";
 
 export function PaletteCard({ palette }: { palette: Palette }) {
   const { isSaved, toggle } = useSavedPalettes();
@@ -13,13 +13,16 @@ export function PaletteCard({ palette }: { palette: Palette }) {
   const isActive = active?.id === palette.id;
 
   return (
-    <article className="rounded-2xl border shadow-sm overflow-hidden theme-border theme-surface">
+    <article
+      className="rounded-2xl border shadow-sm overflow-hidden theme-border theme-surface"
+      style={componentVars(palette.colors)}
+    >
       <div className="flex">
         {palette.colors.map((hex, i) => (
           <div
             key={`${hex}-${i}`}
             className="flex-1 h-28 sm:h-32 md:h-40 relative"
-            style={{ background: hex }}
+            style={{ background: `var(--color-${i + 1}, ${hex})` }}
           >
             <div className="absolute bottom-2 left-2">
               <CopyHex hex={hex} />

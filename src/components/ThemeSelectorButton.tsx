@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useTheme } from "@/lib/theme.store";
+import { PALETTE_COLOR_SLOTS } from "@/lib/constants";
 
 export function ThemeSelectorButton() {
   const { active, setThemeMode } = useTheme();
-  const colors = active?.colors?.slice(0, 4) || [];
+  const colors = active?.colors?.slice(0, PALETTE_COLOR_SLOTS) || [];
   return (
     <div className="inline-flex items-center gap-2">
       <Link
@@ -27,6 +28,8 @@ export function ThemeSelectorButton() {
             <>
               <span className="inline-block h-4 w-4 rounded bg-[var(--accent)] ring-1 ring-black/5" />
               <span className="inline-block h-4 w-4 rounded bg-[var(--foreground)]/70 ring-1 ring-black/5" />
+              <span className="inline-block h-4 w-4 rounded bg-[var(--border)] ring-1 ring-black/5" />
+              <span className="inline-block h-4 w-4 rounded bg-[var(--muted)] ring-1 ring-black/5" />
               <span className="inline-block h-4 w-4 rounded bg-[var(--border)] ring-1 ring-black/5" />
               <span className="inline-block h-4 w-4 rounded bg-[var(--muted)] ring-1 ring-black/5" />
             </>

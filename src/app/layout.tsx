@@ -35,22 +35,28 @@ export default function RootLayout({
   const raw=localStorage.getItem(kPal);
   if (raw) { try { 
     const parsed = JSON.parse(raw);
-    const cols = Array.isArray(parsed?.colors) ? parsed.colors.slice(0,8) : [];
+  const SLOTS = 5; // keep in sync with PALETTE_COLOR_SLOTS
+  const cols = Array.isArray(parsed?.colors) ? parsed.colors.slice(0,SLOTS) : [];
     const mode = parsed?.mode === 'full' ? 'full' : 'accent';
     if (cols.length) {
       const toRGB=(h)=>{h=String(h||'').replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]};
       const lum=(h)=>{const [r,g,b]=toRGB(h);const f=(v)=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)};const [R,G,B]=[f(r),f(g),f(b)];return 0.2126*R+0.7152*G+0.0722*B};
-      const contrast=(bg)=> lum(bg)>0.6 ? '#0b0b0b' : '#fafafa';
+      const contrastBW=(bg)=> lum(bg)>0.6 ? '#0b0b0b' : '#fafafa';
       const mix=(a,b,t)=>{const ar=toRGB(a), br=toRGB(b); const m=(x,y)=>Math.round(x*(1-t)+y*t); const h=(n)=>n.toString(16).padStart(2,'0'); return '#'+h(m(ar[0],br[0]))+h(m(ar[1],br[1]))+h(m(ar[2],br[2]))};
       const sorted=[...cols].sort((a,b)=>lum(b)-lum(a));
       const lightest = sorted[0] || cols[0];
       const darkest = [...cols].sort((a,b)=>lum(a)-lum(b))[0] || cols[0];
       const background = lightest;
-      const foreground = contrast(background);
-      const accent = cols[Math.min(2, cols.length-1)];
+      // choose foreground from palette with best contrast, else fallback BW
+      const bestByContrast = cols
+        .filter((c)=>c.toLowerCase()!==background.toLowerCase())
+        .map((c)=>({c, r: (function(a,b){const la=lum(a), lb=lum(b); const L=Math.max(la,lb), D=Math.min(la,lb); return (L+0.05)/(D+0.05);})(c, background)}))
+        .sort((a,b)=>b.r-a.r)[0];
+      const foreground = bestByContrast && bestByContrast.r>=4.5 ? bestByContrast.c : contrastBW(background);
+      const accent = (cols.find((c)=>c.toLowerCase()!==background.toLowerCase() && c.toLowerCase()!==foreground.toLowerCase()) || cols[Math.min(2, cols.length-1)]);
       const border = mix(background, foreground, 0.15);
       root.style.setProperty('--accent', accent);
-      root.style.setProperty('--accent-contrast', contrast(accent));
+      root.style.setProperty('--accent-contrast', contrastBW(accent));
       cols.forEach((c,i)=> root.style.setProperty('--palette-'+(i+1), c));
       if (mode === 'full') {
         root.style.setProperty('--background', background);

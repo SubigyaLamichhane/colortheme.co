@@ -3,11 +3,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Palette } from "@/lib/types";
+import { PALETTE_COLOR_SLOTS } from "@/lib/constants";
 import {
   getLuminance,
   getBestTextColor,
   mixColors,
   getReadableTextColor,
+  getContrastRatio,
 } from "@/lib/color-utils";
 
 type ActiveTheme = {
@@ -34,7 +36,7 @@ function setCssVarsFromColors(
   mode: "full" | "accent" = "accent"
 ) {
   const root = document.documentElement;
-  const cols = colors.slice(0, 8);
+  const cols = colors.slice(0, PALETTE_COLOR_SLOTS);
 
   if (!cols.length) {
     root.removeAttribute("data-theme-active");
@@ -54,10 +56,27 @@ function setCssVarsFromColors(
 
   // Choose background and foreground with accessibility in mind
   const background = lightest;
-  const foreground = getBestTextColor(background);
+  // Prefer a foreground from the palette that has the highest contrast with background
+  const candidateForegrounds = cols.filter(
+    (c) => c.toLowerCase() !== background.toLowerCase()
+  );
+  const bestByContrast = [...candidateForegrounds].sort(
+    (a, b) => getContrastRatio(b, background) - getContrastRatio(a, background)
+  )[0];
+  const bestIsAccessible = bestByContrast
+    ? getContrastRatio(bestByContrast, background) >= 4.5
+    : false;
+  const foreground = bestIsAccessible
+    ? bestByContrast!
+    : getBestTextColor(background);
 
-  // Choose accent with good contrast against both light and dark backgrounds
-  let accent = cols[Math.min(2, cols.length - 1)];
+  // Choose accent with good contrast; try to avoid reusing foreground
+  let accent =
+    cols.find(
+      (c) =>
+        c.toLowerCase() !== background.toLowerCase() &&
+        c.toLowerCase() !== foreground.toLowerCase()
+    ) || cols[Math.min(2, cols.length - 1)];
 
   // If accent doesn't have good contrast, find a better one
   const isLightTheme = getLuminance(background) > 0.5;
@@ -177,7 +196,7 @@ export const useTheme = create<ThemeState>()(
           ];
 
           // Remove palette color variables
-          for (let i = 1; i <= 8; i++) {
+          for (let i = 1; i <= PALETTE_COLOR_SLOTS; i++) {
             varsToRemove.push(`--palette-${i}`);
             varsToRemove.push(`--palette-${i}-text`);
             varsToRemove.push(`--palette-${i}-text-subtle`);
@@ -217,3 +236,17 @@ export const useTheme = create<ThemeState>()(
 
 // Re-export helpers for reuse
 export const __internal = { setCssVarsFromColors };
+
+/**
+ * Utility: Given a colors array, return an inline style object with
+ * per-component variables: --color-1 .. --color-N, clamped to PALETTE_COLOR_SLOTS.
+ * Usage: <div style={componentVars(colors)} /> then use var(--color-1) in CSS.
+ */
+export function componentVars(colors: string[]) {
+  const out: Record<string, string> = {};
+  const max = Math.min(colors.length, PALETTE_COLOR_SLOTS);
+  for (let i = 0; i < max; i++) {
+    out[`--color-${i + 1}`] = colors[i];
+  }
+  return out as React.CSSProperties;
+}

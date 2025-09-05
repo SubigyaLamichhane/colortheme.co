@@ -148,6 +148,23 @@ a.theme-link:hover {
   background-color: var(--palette-4);
   color: var(--palette-4-text-subtle);
 }
+/* Added slots 5 and 6 for consistency */
+.palette-text-5 {
+  background-color: var(--palette-5);
+  color: var(--palette-5-text);
+}
+.palette-text-5-subtle {
+  background-color: var(--palette-5);
+  color: var(--palette-5-text-subtle);
+}
+.palette-text-6 {
+  background-color: var(--palette-6);
+  color: var(--palette-6-text);
+}
+.palette-text-6-subtle {
+  background-color: var(--palette-6);
+  color: var(--palette-6-text-subtle);
+}
 
 /* Preset themes (3–4 core colors each) */
 /* Ocean (dark cool) */
