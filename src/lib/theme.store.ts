@@ -112,6 +112,8 @@ function setCssVarsFromColors(
       ? "light"
       : "dark";
     root.setAttribute("data-theme-active", "true");
+    // If a preset data-theme is active, clear it to let palette drive the UI
+    root.removeAttribute("data-theme");
   } else {
     // Accent mode: keep defaults; mark state for reference
     root.setAttribute("data-theme-active", "accent");
@@ -123,20 +125,17 @@ export const useTheme = create<ThemeState>()(
     (set) => ({
       active: null,
       applyPalette: (palette, mode) => {
+        // Default to full so background and text update across the app
+        const modeToUse: "full" | "accent" = mode ?? "full";
         const payload: ActiveTheme = {
           id: palette.id,
           name: palette.name,
           colors: palette.colors as string[],
-          mode:
-            mode ||
-            (typeof window !== "undefined"
-              ? JSON.parse(localStorage.getItem(THEME_STORAGE_KEY) || "{}")
-                  ?.mode || "full"
-              : "full"),
+          mode: modeToUse,
         };
         try {
           localStorage.setItem(THEME_STORAGE_KEY, JSON.stringify(payload));
-          setCssVarsFromColors(payload.colors, payload.mode || "accent");
+          setCssVarsFromColors(payload.colors, payload.mode || "full");
         } catch {}
         set({ active: payload });
       },
@@ -160,6 +159,7 @@ export const useTheme = create<ThemeState>()(
           localStorage.removeItem(THEME_STORAGE_KEY);
           const root = document.documentElement;
           root.removeAttribute("data-theme-active");
+          // Allow preset (if any) to take over again; do not force-remove data-theme here
           // Reset color-scheme back to stylesheet/defaults
           document.documentElement.style.colorScheme = "";
           // Remove custom vars to let defaults/dark-mode apply
@@ -184,6 +184,18 @@ export const useTheme = create<ThemeState>()(
           }
 
           varsToRemove.forEach((k) => root.style.removeProperty(k));
+
+          // Re-apply preset (if stored) so the site returns to the chosen preset theme
+          try {
+            const raw = localStorage.getItem("palettehub:presetTheme");
+            const parsed = raw ? JSON.parse(raw) : null;
+            const preset = parsed?.state?.preset || parsed?.preset;
+            if (preset && preset !== "system" && preset !== "none") {
+              root.setAttribute("data-theme", preset);
+            } else {
+              root.removeAttribute("data-theme");
+            }
+          } catch {}
         } catch {}
         set({ active: null });
       },

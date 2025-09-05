@@ -40,7 +40,7 @@ export function PaletteCard({ palette }: { palette: Palette }) {
               e.preventDefault();
               e.stopPropagation();
               if (isActive) clearTheme();
-              else applyPalette(palette);
+              else applyPalette(palette, "full");
             }}
             className={`inline-flex items-center gap-1 text-xs rounded-lg px-2 py-1 ${
               isActive ? "btn-accent" : "btn-outline"
