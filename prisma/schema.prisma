@@ -22,10 +22,11 @@ model Palette {
 model Like {
   id        String   @id @default(cuid())
   ip        String
+  clientId  String
   paletteId String
   createdAt DateTime @default(now())
   palette   Palette @relation(fields: [paletteId], references: [id], onDelete: Cascade)
-  @@unique([ip, paletteId])
+  @@unique([clientId, paletteId])
 }
 
 // Optional user model kept for future auth expansion (commented out for now)
