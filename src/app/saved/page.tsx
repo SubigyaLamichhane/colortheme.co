@@ -34,6 +34,38 @@ export default function SavedPage() {
     [savedIds, allPalettes]
   );
 
+  // AI palette generator state
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiPalette, setAiPalette] = useState<{
+    name: string;
+    colors: { hex: string; name?: string }[];
+  } | null>(null);
+
+  async function generatePalette(e?: React.FormEvent) {
+    e?.preventDefault?.();
+    setAiError(null);
+    setAiLoading(true);
+    try {
+      const res = await fetch("/api/generate-palette", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: aiPrompt, count: 5 }),
+      });
+      if (!res.ok) throw new Error("Request failed");
+      const data = (await res.json()) as {
+        name: string;
+        colors: { hex: string; name?: string }[];
+      };
+      setAiPalette(data);
+    } catch {
+      setAiError("Could not generate a palette. Try again.");
+    } finally {
+      setAiLoading(false);
+    }
+  }
+
   return (
     <div className="space-y-4">
       <header className="space-y-1">
@@ -42,6 +74,59 @@ export default function SavedPage() {
           Your favorites live here. Remove any by tapping the heart.
         </p>
       </header>
+
+      {/* AI palette generator */}
+      <div className="rounded-2xl border p-4 theme-border space-y-3">
+        <form onSubmit={generatePalette} className="flex gap-2">
+          <input
+            value={aiPrompt}
+            onChange={(e) => setAiPrompt(e.target.value)}
+            placeholder="Describe a mood, theme, or brand (e.g., calming beach at sunset)"
+            className="flex-1 rounded-lg border px-3 py-2 text-sm theme-border bg-transparent"
+          />
+          <button
+            type="submit"
+            disabled={aiLoading}
+            className="rounded-lg bg-primary px-4 py-2 text-sm text-white disabled:opacity-50"
+          >
+            {aiLoading ? "Generating…" : "Generate with AI"}
+          </button>
+        </form>
+        {aiError && <p className="text-sm text-red-500">{aiError}</p>}
+        {aiPalette && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium">{aiPalette.name}</h2>
+              <button
+                onClick={() => generatePalette()}
+                disabled={aiLoading}
+                className="text-xs underline disabled:opacity-50"
+              >
+                Regenerate
+              </button>
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {aiPalette.colors.map((c) => (
+                <button
+                  key={c.hex}
+                  title={`${c.name ? c.name + " · " : ""}${c.hex}`}
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(c.hex);
+                    } catch {}
+                  }}
+                  className="group relative h-16 rounded-lg border theme-border overflow-hidden"
+                  style={{ backgroundColor: c.hex }}
+                >
+                  <span className="absolute bottom-1 left-1 right-1 rounded px-1 py-0.5 text-[10px] font-medium backdrop-blur-sm bg-black/30 text-white opacity-0 group-hover:opacity-100 transition">
+                    {c.hex}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
 
       {!hydrated ? (
         <div className="rounded-2xl border p-6 text-sm text-secondary theme-border">

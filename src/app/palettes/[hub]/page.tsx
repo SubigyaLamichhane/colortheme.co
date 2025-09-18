@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { allHubSlugs, hubBySlug, palettesForHub } from "@/lib/hub-utils";
 import { hubMetaDescription, hubMetaTitle } from "@/lib/seo";
 import { PalettesExplorer } from "@/components/PalettesExplorer";
+import AIPaletteSection from "@/components/AIPaletteSection";
 
 export const dynamic = "force-static";
 
@@ -49,6 +50,9 @@ export default async function HubPage({
       </header>
 
       <PalettesExplorer items={items} />
+
+      {/* AI Generator (used as fallback when no results match) */}
+      <AIPaletteSection />
     </div>
   );
 }

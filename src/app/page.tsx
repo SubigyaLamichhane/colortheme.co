@@ -2,6 +2,8 @@ import Link from "next/link";
 import { PALETTES } from "@/data/palettes";
 import { HUBS } from "@/data/hubs";
 import { PaletteCard } from "@/components/PaletteCard";
+import AIPaletteSection from "@/components/AIPaletteSection";
+import HeroSearch from "@/components/HeroSearch";
 
 export const dynamic = "force-static";
 
@@ -12,36 +14,10 @@ export default function Home() {
   return (
     <div className="space-y-10">
       {/* Hero */}
-      <section className="rounded-2xl border p-6 md:p-8 theme-surface theme-border">
-        <div className="max-w-3xl space-y-4">
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
-            Find the perfect color palette
-          </h1>
-          <p className="text-sm text-secondary">
-            Explore curated palettes for brands, UI, and marketing. Copy HEX in
-            one click and save your favorites.
-          </p>
-          <form action="/palettes/all" method="GET" className="mt-4">
-            <div className="flex gap-2">
-              <input
-                name="q"
-                placeholder="Search palettes, colors, tags"
-                className="flex-1 px-3 py-2 text-sm input-base"
-                aria-label="Search palettes"
-              />
-              <button
-                type="submit"
-                className="px-3 py-2 rounded-lg text-sm btn-accent"
-              >
-                Search
-              </button>
-            </div>
-          </form>
-          <div className="pt-3 text-xs text-secondary">
-            Or browse hubs below.
-          </div>
-        </div>
-      </section>
+      <HeroSearch />
+
+      {/* AI Generator */}
+      <AIPaletteSection />
 
       {/* Trending */}
       <section className="space-y-4">

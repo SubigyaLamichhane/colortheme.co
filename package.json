@@ -26,6 +26,7 @@
     "lucide-react": "^0.541.0",
     "next": "15.5.0",
     "next-seo": "^6.8.0",
+    "openai": "^5.20.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "zod": "^4.1.0",
@@ -40,8 +41,8 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.0",
     "prisma": "^6.15.0",
-    "tsx": "^4.19.2",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }

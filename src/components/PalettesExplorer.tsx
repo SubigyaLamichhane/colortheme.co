@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Palette } from "@/lib/types";
 import Link from "next/link";
 import { PaletteCard } from "./PaletteCard";
 import { useSearchParams } from "next/navigation";
 import { RCATEGORIES } from "@/data/rpalettes";
 import { SidebarSaved } from "./SidebarSaved";
+import { CopyHex } from "@/components/CopyHex";
+import { useDebounce } from "@/lib/hooks/useDebounce";
 
 type Props = {
   items: Palette[];
@@ -23,11 +25,29 @@ export function PalettesExplorer({ items }: Props) {
   const [typ, setTyp] = useState<string>("all");
   const [cat, setCat] = useState<string>("all");
   const [visible, setVisible] = useState<number>(40); // paging window
+  const autoTriggeredForRef = useRef<string | null>(null);
+  const aiControllerRef = useRef<AbortController | null>(null);
+
+  // AI generation state for inline fallback when no results
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<{
+    name: string;
+    colors: { hex: string; name?: string }[];
+  } | null>(null);
 
   useEffect(() => {
     const q = searchParams.get("q") || "";
     setQuery(q);
   }, [searchParams]);
+
+  // Debounce user query to avoid spamming filters and network calls
+  const debouncedQuery = useDebounce(query, 400);
+
+  // Reset AI auto-trigger guard when query changes
+  useEffect(() => {
+    autoTriggeredForRef.current = null;
+  }, [debouncedQuery]);
 
   const packages = useMemo(() => {
     const s = new Set<string>();
@@ -49,8 +69,8 @@ export function PalettesExplorer({ items }: Props) {
 
   const filtered = useMemo(() => {
     let out = items;
-    if (query.trim()) {
-      const q = query.toLowerCase();
+    if (debouncedQuery.trim()) {
+      const q = debouncedQuery.toLowerCase();
       out = out.filter(
         (p) =>
           p.name.toLowerCase().includes(q) ||
@@ -80,7 +100,69 @@ export function PalettesExplorer({ items }: Props) {
       out = [...out].sort(() => Math.random() - 0.5);
     }
     return out;
-  }, [items, query, sort, len, pkg, typ, cat]);
+  }, [items, debouncedQuery, sort, len, pkg, typ, cat]);
+
+  // Auto-trigger AI generation when there are no results for a non-empty query.
+  useEffect(() => {
+    const q = debouncedQuery.trim();
+    if (!q) return;
+    if (filtered.length !== 0) return;
+    if (autoTriggeredForRef.current === q) return;
+
+    // Mark as triggered for this query to avoid loops
+    autoTriggeredForRef.current = q;
+
+    // Kick off inline AI generation here
+    (async () => {
+      setAiError(null);
+      setAiResult(null);
+      setAiLoading(true);
+      aiControllerRef.current?.abort();
+      const ctrl = new AbortController();
+      aiControllerRef.current = ctrl;
+      try {
+        const res = await fetch("/api/generate-palette", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: q, count: len > 0 ? len : 5 }),
+          signal: ctrl.signal,
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data?.error || "Failed to generate palette");
+        }
+        const data = (await res.json()) as {
+          name: string;
+          colors: { hex: string; name?: string }[];
+        };
+        setAiResult(data);
+      } catch (e) {
+        const err = e as Error & { name?: string };
+        if (err?.name === "AbortError") return;
+        setAiError(err?.message || "Could not generate a palette. Try again.");
+      } finally {
+        setAiLoading(false);
+      }
+    })();
+
+    // Also dispatch event to the dedicated AI section (kept for users who scroll)
+    window.dispatchEvent(
+      new CustomEvent("ai-generate", {
+        detail: { prompt: q },
+      })
+    );
+    // Update URL param for shareability
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("ai", q);
+      history.replaceState({}, "", url);
+    } catch {}
+    // Scroll to AI section
+    document.getElementById("ai")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }, [filtered.length, debouncedQuery, len]);
 
   // Infinite scroll: increase visible on scroll near bottom
   useEffect(() => {
@@ -99,7 +181,7 @@ export function PalettesExplorer({ items }: Props) {
   // Reset visible when filters/query change
   useEffect(() => {
     setVisible(40);
-  }, [query, sort, len, pkg, typ, cat]);
+  }, [debouncedQuery, sort, len, pkg, typ, cat]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
@@ -111,6 +193,11 @@ export function PalettesExplorer({ items }: Props) {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                }
+              }}
               placeholder="Search palettes, colors, tags"
               className="w-full pl-3 pr-3 py-2 text-sm input-base"
               aria-label="Search palettes"
@@ -199,25 +286,25 @@ export function PalettesExplorer({ items }: Props) {
                   ))}
                 </select>
               </label>
-            </div>
 
-            <div className="flex items-center justify-between pt-2">
-              <div className="text-xs text-muted">
-                {filtered.length} results
+              <div className="flex items-center justify-between pt-2">
+                <div className="text-xs text-muted">
+                  {filtered.length} results
+                </div>
+                <button
+                  onClick={() => {
+                    setQuery("");
+                    setSort("trending");
+                    setLen(0);
+                    setPkg("all");
+                    setTyp("all");
+                    setCat("all");
+                  }}
+                  className="text-xs px-2 py-1 rounded btn-outline"
+                >
+                  Clear
+                </button>
               </div>
-              <button
-                onClick={() => {
-                  setQuery("");
-                  setSort("trending");
-                  setLen(0);
-                  setPkg("all");
-                  setTyp("all");
-                  setCat("all");
-                }}
-                className="text-xs px-2 py-1 rounded btn-outline"
-              >
-                Clear
-              </button>
             </div>
           </div>
         </div>
@@ -235,7 +322,96 @@ export function PalettesExplorer({ items }: Props) {
               </Link>
             ))
           ) : (
-            <div className="text-sm text-secondary">No palettes match.</div>
+            <div className="space-y-3" role="status" aria-live="polite">
+              <div className="text-sm text-secondary">
+                No palettes match{query ? ` for “${query}”` : ""}.
+              </div>
+              {query.trim() && (
+                <div className="rounded-2xl border p-4 theme-border theme-surface">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="text-sm font-medium">
+                      {aiLoading
+                        ? "Generating a palette with AI… ✨"
+                        : aiResult
+                        ? "AI suggestion"
+                        : "Generate with AI"}
+                    </div>
+                    {!aiLoading && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            // retrigger for the same query
+                            autoTriggeredForRef.current = null;
+                            // call effect body by changing a dummy state would be heavy; instead call inline
+                            const q = query.trim();
+                            if (!q) return;
+                            setAiError(null);
+                            setAiResult(null);
+                            setAiLoading(true);
+                            aiControllerRef.current?.abort();
+                            const ctrl = new AbortController();
+                            aiControllerRef.current = ctrl;
+                            fetch("/api/generate-palette", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                prompt: q,
+                                count: len > 0 ? len : 5,
+                              }),
+                              signal: ctrl.signal,
+                            })
+                              .then(async (r) => {
+                                if (!r.ok) {
+                                  const d = await r.json().catch(() => ({}));
+                                  throw new Error(
+                                    d?.error || "Failed to generate palette"
+                                  );
+                                }
+                                return r.json();
+                              })
+                              .then((d) => setAiResult(d))
+                              .catch((e) => {
+                                if (e?.name === "AbortError") return;
+                                setAiError(
+                                  e?.message ||
+                                    "Could not generate a palette. Try again."
+                                );
+                              })
+                              .finally(() => setAiLoading(false));
+                          }}
+                          className="text-xs px-2 py-1 rounded btn-outline"
+                          disabled={aiLoading}
+                        >
+                          {aiResult ? "Regenerate" : "Generate"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {aiError && (
+                    <div className="mt-2 text-xs text-red-500">{aiError}</div>
+                  )}
+
+                  {aiResult && (
+                    <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                      {aiResult.colors.map((c, i) => (
+                        <div
+                          key={`${c.hex}-${i}`}
+                          className="relative rounded-xl border h-24 theme-border overflow-hidden"
+                          style={{ background: c.hex }}
+                          title={c.name || c.hex}
+                          aria-label={c.name || c.hex}
+                        >
+                          <div className="absolute bottom-2 left-2">
+                            <CopyHex hex={c.hex} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </section>
